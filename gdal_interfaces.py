@@ -167,12 +167,16 @@ class GDALTileInterface(object):
             raise Exception('Invalid latitude/longitude')
         else:
             coords = nearest[0].object
-
             gdal_interface = self._open_gdal_interface(coords['file'])
+            
+            xgeo, ygeo, zgeo = gdal_interface.coordinate_transform.TransformPoint(lng, lat, 0)
+            nearest = list(self.index.nearest((ygeo, xgeo), 1, objects=True))
+            coords = nearest[0].object
+            gdal_interface = self._open_gdal_interface(coords['file'])
+
             return int(gdal_interface.lookup(lat, lng))
 
     def _build_index(self):
-        print('Building spatial index ...')
         index_id = 1
         for e in self.all_coords:
             e['index_id'] = index_id
